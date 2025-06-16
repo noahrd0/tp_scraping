@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-gray: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+        }
+    
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+    
+        .container-fluid {
+            padding: 2rem;
+        }
+    
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            margin: 0 auto;
+            max-width: 1400px;
+            padding-bottom: 1rem;
+            overflow: visible; /* Changed from hidden to visible */
+        }
+    
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+    
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+    
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+    
+        .main-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+    
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+    
+        .filters-section {
+            padding: 2.5rem;
+            background: white;
+            overflow: visible; /* Changed from hidden to visible */
+        }
+    
+        .section-title {
+            color: var(--dark-color);
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    
+        .filter-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: visible; /* Changed from hidden to visible */
+        }
+    
+        .filter-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+        }
+    
+        .filter-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    
+        /* New Modern Multi-Select Styles */
+        .modern-multiselect {
+            position: relative;
+            width: 100%;
+            z-index: 1; /* Base z-index */
+        }
+    
+        .modern-multiselect.active {
+            z-index: 99999; /* High z-index when active */
+        }
+    
+        .multiselect-trigger {
+            background: var(--light-gray);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            color: var(--dark-color);
+            text-align: left;
+            transition: all 0.3s ease;
+            min-height: 48px;
+        }
+    
+        .multiselect-trigger:hover, .multiselect-trigger.active {
+            border-color: var(--accent-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    
+        .multiselect-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            z-index: 999999; /* Very high z-index for dropdown */
+            max-height: 320px;
+            overflow: hidden;
+            display: none;
+            margin-top: 4px;
+        }
+    
+        .multiselect-dropdown.show {
+            display: block;
+        }
+    
+        .multiselect-search {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+    
+        .multiselect-search input {
+            width: 100%;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem 0.5rem 3rem; /* Increased left padding for icon */
+            font-size: 0.9rem;
+            outline: none;
+        }
+    
+        .multiselect-search input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    
+        .multiselect-search .search-icon {
+            position: absolute;
+            left: 2rem; /* Adjusted position for better spacing */
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            z-index: 2;
+        }
+    
+        .multiselect-options {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+    
+        .multiselect-option {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+    
+        .multiselect-option:hover {
+            background: var(--light-gray);
+        }
+    
+        .multiselect-option.selected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            font-weight: 600;
+        }
+    
+        /* Custom checkbox styling with white checkmark */
+        .multiselect-option input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            margin-right: 0.75rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+    
+        .multiselect-option input[type="checkbox"]:checked {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+    
+        .multiselect-option input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
+        }
+    
+        .multiselect-option input[type="checkbox"]:hover {
+            border-color: var(--accent-color);
+        }
+    
+        .multiselect-option label {
+            cursor: pointer;
+            flex: 1;
+            user-select: none;
+        }
+    
+        .multiselect-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+    
+        .multiselect-tag {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    
+        .multiselect-tag .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+    
+        .multiselect-tag .remove-tag:hover {
+            opacity: 1;
+        }
+    
+        .selected-count {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    
+        .range-container {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+        }
+    
+        .range-input {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-weight: 500;
+            width: 80px;
+        }
+    
+        .range-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    
+        .form-range {
+            height: 6px;
+        }
+    
+        .form-range::-webkit-slider-thumb {
+            background: var(--accent-color);
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+        }
+    
+        .axis-selectors {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+    
+        .custom-select {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+    
+        .custom-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+    
+        .generate-btn {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            color: white !important;
+        }
+    
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4);
+            color: white !important;
+        }
+    
+        .chart-section {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    
+        .error-message {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fca5a5;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem;
+            color: #dc2626;
+        }
+    
+        .no-chart-message {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #93c5fd;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            color: #1e40af;
+            margin: 2rem;
+        }
+    
+        .stats-info {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 2rem 2rem 3rem 2rem;
+            font-weight: 600;
+        }
+    
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+    
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 1rem;
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .filter-card {
+                padding: 1rem;
+            }
+            
+            .generate-btn {
+                width: 100%;
+                padding: 1rem;
+            }
+    
+            .chart-section,
+            .error-message,
+            .no-chart-message,
+            .stats-info {
+                margin: 1rem;
+            }
+        }
+    
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    
+        .filter-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+    
+        .filter-card:nth-child(1) { animation-delay: 0.1s; }
+        .filter-card:nth-child(2) { animation-delay: 0.2s; }
+        .filter-card:nth-child(3) { animation-delay: 0.3s; }
+        .filter-card:nth-child(4) { animation-delay: 0.4s; }
+    
+        /* Custom Scrollbar */
+        .multiselect-options::-webkit-scrollbar {
+            width: 6px;
+        }
+    
+        .multiselect-options::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+    
+        .multiselect-options::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+    
+        .multiselect-options::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <div class="header-section">
+                <div class="header-content">
+                    <h1 class="main-title">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Football Analytics
+                    </h1>
+                    <p class="subtitle">Advanced Player Performance Dashboard</p>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="filters-section">
+                <form method="POST" action="" id="analyticsForm">
+                    {% csrf_token %}
+                    
+                    <h2 class="section-title">
+                        <i class="fas fa-filter"></i>
+                        Filter Players
+                    </h2>
+
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="filter-card" style="position: relative; z-index: 1;">
+                                <label class="filter-label">
+                                    <i class="fas fa-trophy text-warning"></i>
+                                    League
+                                </label>
+                                <div class="modern-multiselect" data-name="league" data-placeholder="Select leagues">
+                                    <div class="multiselect-trigger">
+                                        <span class="selected-text">Select leagues</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <div style="position: relative;">
+                                                <i class="fas fa-search search-icon"></i>
+                                                <input type="text" placeholder="  Search leagues..." class="search-input">
+                                            </div>
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {% for league in leagues %}
+                                            <div class="multiselect-option" data-value="{{ league.id }}" data-text="{{ league.name }}">
+                                                <input type="checkbox" name="league" value="{{ league.id }}" id="league{{ league.id }}" 
+                                                       {% if league.id|stringformat:"s" in selected_leagues %}checked{% endif %}>
+                                                <label for="league{{ league.id }}">{{ league.name }}</label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="filter-card" style="position: relative; z-index: 1;">
+                                <label class="filter-label">
+                                    <i class="fas fa-shield-alt text-primary"></i>
+                                    Club
+                                </label>
+                                <div class="modern-multiselect" data-name="club" data-placeholder="Select clubs">
+                                    <div class="multiselect-trigger">
+                                        <span class="selected-text">Select clubs</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <div style="position: relative;">
+                                                <i class="fas fa-search search-icon"></i>
+                                                <input type="text" placeholder="  Search clubs..." class="search-input">
+                                            </div>
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {% for club in clubs %}
+                                            <div class="multiselect-option" data-value="{{ club.id }}" data-text="{{ club.name }}">
+                                                <input type="checkbox" name="club" value="{{ club.id }}" id="club{{ club.id }}" 
+                                                       {% if club.id|stringformat:"s" in selected_clubs %}checked{% endif %}>
+                                                <label for="club{{ club.id }}">{{ club.name }}</label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="filter-card" style="position: relative; z-index: 1;">
+                                <label class="filter-label">
+                                    <i class="fas fa-flag text-success"></i>
+                                    Country
+                                </label>
+                                <div class="modern-multiselect" data-name="country" data-placeholder="Select countries">
+                                    <div class="multiselect-trigger">
+                                        <span class="selected-text">Select countries</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <div style="position: relative;">
+                                                <i class="fas fa-search search-icon"></i>
+                                                <input type="text" placeholder="  Search countries..." class="search-input">
+                                            </div>
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {% for country in countries %}
+                                            <div class="multiselect-option" data-value="{{ country }}" data-text="{{ country }}">
+                                                <input type="checkbox" name="country" value="{{ country }}" id="country{{ forloop.counter }}" 
+                                                       {% if country in selected_countries %}checked{% endif %}>
+                                                <label for="country{{ forloop.counter }}">{{ country }}</label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="filter-card" style="position: relative; z-index: 1;">
+                                <label class="filter-label">
+                                    <i class="fas fa-running text-info"></i>
+                                    Position
+                                </label>
+                                <div class="modern-multiselect" data-name="position" data-placeholder="Select positions">
+                                    <div class="multiselect-trigger">
+                                        <span class="selected-text">Select positions</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <div style="position: relative;">
+                                                <i class="fas fa-search search-icon"></i>
+                                                <input type="text" placeholder="  Search positions..." class="search-input">
+                                            </div>
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {% for position in positions %}
+                                            <div class="multiselect-option" data-value="{{ position }}" data-text="{{ position }}">
+                                                <input type="checkbox" name="position" value="{{ position }}" id="position{{ forloop.counter }}" 
+                                                       {% if position in selected_positions %}checked{% endif %}>
+                                                <label for="position{{ forloop.counter }}">{{ position }}</label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title mt-4">
+                        <i class="fas fa-sliders-h"></i>
+                        Advanced Filters
+                    </h3>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-md-12 mb-3">
+                            <div class="filter-card">
+                                <label class="filter-label">
+                                    <i class="fas fa-birthday-cake text-warning"></i>
+                                    Age Range
+                                </label>
+                                <div class="range-container">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="number" id="min_age" name="min_age" class="form-control range-input" 
+                                               value="{{ form_data.min_age|default:18 }}" min="0" max="100">
+                                        <div class="flex-grow-1">
+                                            <input type="range" id="age_range_min" class="form-range" min="0" max="100" step="1" 
+                                                   value="{{ form_data.min_age|default:18 }}" 
+                                                   oninput="updateRange('age', this.value, 'min')">
+                                            <input type="range" id="age_range_max" class="form-range" min="0" max="100" step="1" 
+                                                   value="{{ form_data.max_age|default:35 }}" 
+                                                   oninput="updateRange('age', this.value, 'max')">
+                                        </div>
+                                        <input type="number" id="max_age" name="max_age" class="form-control range-input" 
+                                               value="{{ form_data.max_age|default:35 }}" min="0" max="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-12 mb-3">
+                            <div class="filter-card">
+                                <label class="filter-label">
+                                    <i class="fas fa-ruler-vertical text-info"></i>
+                                    Height Range (cm)
+                                </label>
+                                <div class="range-container">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="number" id="min_height" name="min_height" class="form-control range-input" 
+                                               value="{{ form_data.min_height|default:150 }}" min="0" max="250">
+                                        <div class="flex-grow-1">
+                                            <input type="range" id="height_range_min" class="form-range" min="0" max="250" step="1" 
+                                                   value="{{ form_data.min_height|default:150 }}" 
+                                                   oninput="updateRange('height', this.value, 'min')">
+                                            <input type="range" id="height_range_max" class="form-range" min="0" max="250" step="1" 
+                                                   value="{{ form_data.max_height|default:200 }}" 
+                                                   oninput="updateRange('height', this.value, 'max')">
+                                        </div>
+                                        <input type="number" id="max_height" name="max_height" class="form-control range-input" 
+                                               value="{{ form_data.max_height|default:200 }}" min="0" max="250">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-12 mb-3">
+                            <div class="filter-card">
+                                <label class="filter-label">
+                                    <i class="fas fa-euro-sign text-success"></i>
+                                    Market Value (Million €)
+                                </label>
+                                <div class="range-container">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="number" id="min_market_value" name="min_market_value" class="form-control range-input" 
+                                               value="{{ form_data.min_market_value|default:0 }}" min="0" max="500">
+                                        <div class="flex-grow-1">
+                                            <input type="range" id="market_value_range_min" class="form-range" min="0" max="500" step="1" 
+                                                   value="{{ form_data.min_market_value|default:0 }}" 
+                                                   oninput="updateRange('market_value', this.value, 'min')">
+                                            <input type="range" id="market_value_range_max" class="form-range" min="0" max="500" step="1" 
+                                                   value="{{ form_data.max_market_value|default:100 }}" 
+                                                   oninput="updateRange('market_value', this.value, 'max')">
+                                        </div>
+                                        <input type="number" id="max_market_value" name="max_market_value" class="form-control range-input" 
+                                               value="{{ form_data.max_market_value|default:100 }}" min="0" max="500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="axis-selectors">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-scatter"></i>
+                            Chart Configuration
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="filter-label">
+                                    <i class="fas fa-arrows-alt-h text-primary"></i>
+                                    X-Axis Statistic
+                                </label>
+                                <!-- <select name="x_axis" id="x_axis" class="form-control">
+                                    {% for field_name, field_label in data_field_choices %}
+                                        <option value="{{ field_name }}" {% if form_data.x_axis == field_name %}selected{% endif %}>
+                                            {{ field_label }}
+                                        </option>
+                                    {% endfor %}
+                                </select> -->
+                                <select class="form-select custom-select" id="x_axis" name="x_axis" required>
+                                    <option value="" disabled {% if not form_data.x_axis %}selected{% endif %}>Choose a statistic...</option>
+                                    
+                                    <optgroup label="🥅 Shooting">
+                                        <option value="goals" {% if form_data.x_axis == "goals" %}selected{% endif %}>Goals</option>
+                                        <option value="expected_goals" {% if form_data.x_axis == "expected_goals" %}selected{% endif %}>Expected Goals (xG)</option>
+                                        <option value="xg_on_target" {% if form_data.x_axis == "xg_on_target" %}selected{% endif %}>xG on Target</option>
+                                        <option value="penalty_goals" {% if form_data.x_axis == "penalty_goals" %}selected{% endif %}>Penalty Goals</option>
+                                        <option value="non_penalty_xg" {% if form_data.x_axis == "non_penalty_xg" %}selected{% endif %}>Non-Penalty xG</option>
+                                        <option value="shots" {% if form_data.x_axis == "shots" %}selected{% endif %}>Shots</option>
+                                        <option value="shots_on_target" {% if form_data.x_axis == "shots_on_target" %}selected{% endif %}>Shots on Target</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🎯 Passing">
+                                        <option value="assists" {% if form_data.x_axis == "assists" %}selected{% endif %}>Assists</option>
+                                        <option value="expected_assists" {% if form_data.x_axis == "expected_assists" %}selected{% endif %}>Expected Assists (xA)</option>
+                                        <option value="successful_passes" {% if form_data.x_axis == "successful_passes" %}selected{% endif %}>Successful Passes</option>
+                                        <option value="pass_accuracy" {% if form_data.x_axis == "pass_accuracy" %}selected{% endif %}>Pass Accuracy (%)</option>
+                                        <option value="accurate_long_balls" {% if form_data.x_axis == "accurate_long_balls" %}selected{% endif %}>Accurate Long Balls</option>
+                                        <option value="long_ball_accuracy" {% if form_data.x_axis == "long_ball_accuracy" %}selected{% endif %}>Long Ball Accuracy (%)</option>
+                                        <option value="chances_created" {% if form_data.x_axis == "chances_created" %}selected{% endif %}>Chances Created</option>
+                                        <option value="successful_crosses" {% if form_data.x_axis == "successful_crosses" %}selected{% endif %}>Successful Crosses</option>
+                                        <option value="cross_accuracy" {% if form_data.x_axis == "cross_accuracy" %}selected{% endif %}>Cross Accuracy (%)</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="⚡ Possession">
+                                        <option value="successful_dribbles" {% if form_data.x_axis == "successful_dribbles" %}selected{% endif %}>Successful Dribbles</option>
+                                        <option value="dribble_success" {% if form_data.x_axis == "dribble_success" %}selected{% endif %}>Dribble Success (%)</option>
+                                        <option value="touches" {% if form_data.x_axis == "touches" %}selected{% endif %}>Touches</option>
+                                        <option value="touches_in_opposition_box" {% if form_data.x_axis == "touches_in_opposition_box" %}selected{% endif %}>Touches in Opposition Box</option>
+                                        <option value="dispossessed" {% if form_data.x_axis == "dispossessed" %}selected{% endif %}>Dispossessed</option>
+                                        <option value="fouls_won" {% if form_data.x_axis == "fouls_won" %}selected{% endif %}>Fouls Won</option>
+                                        <option value="penalties_awarded" {% if form_data.x_axis == "penalties_awarded" %}selected{% endif %}>Penalties Awarded</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🛡️ Defending">
+                                        <option value="tackles_won" {% if form_data.x_axis == "tackles_won" %}selected{% endif %}>Tackles Won</option>
+                                        <option value="tackles_won_percentage" {% if form_data.x_axis == "tackles_won_percentage" %}selected{% endif %}>Tackles Won (%)</option>
+                                        <option value="duels_won" {% if form_data.x_axis == "duels_won" %}selected{% endif %}>Duels Won</option>
+                                        <option value="duels_won_percentage" {% if form_data.x_axis == "duels_won_percentage" %}selected{% endif %}>Duels Won (%)</option>
+                                        <option value="aerial_duels_won" {% if form_data.x_axis == "aerial_duels_won" %}selected{% endif %}>Aerial Duels Won</option>
+                                        <option value="aerial_duels_won_percentage" {% if form_data.x_axis == "aerial_duels_won_percentage" %}selected{% endif %}>Aerial Duels Won (%)</option>
+                                        <option value="interceptions" {% if form_data.x_axis == "interceptions" %}selected{% endif %}>Interceptions</option>
+                                        <option value="blocked" {% if form_data.x_axis == "blocked" %}selected{% endif %}>Blocked</option>
+                                        <option value="fouls_committed" {% if form_data.x_axis == "fouls_committed" %}selected{% endif %}>Fouls Committed</option>
+                                        <option value="recoveries" {% if form_data.x_axis == "recoveries" %}selected{% endif %}>Recoveries</option>
+                                        <option value="possession_won_final_3rd" {% if form_data.x_axis == "possession_won_final_3rd" %}selected{% endif %}>Possession Won Final 3rd</option>
+                                        <option value="dribbled_past" {% if form_data.x_axis == "dribbled_past" %}selected{% endif %}>Dribbled Past</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="📋 Discipline">
+                                        <option value="yellow_cards" {% if form_data.x_axis == "yellow_cards" %}selected{% endif %}>Yellow Cards</option>
+                                        <option value="red_cards" {% if form_data.x_axis == "red_cards" %}selected{% endif %}>Red Cards</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🥅 Goalkeeping">
+                                        <option value="saves" {% if form_data.x_axis == "saves" %}selected{% endif %}>Saves</option>
+                                        <option value="save_percentage" {% if form_data.x_axis == "save_percentage" %}selected{% endif %}>Save Percentage (%)</option>
+                                        <option value="goals_conceded" {% if form_data.x_axis == "goals_conceded" %}selected{% endif %}>Goals Conceded</option>
+                                        <option value="goals_prevented" {% if form_data.x_axis == "goals_prevented" %}selected{% endif %}>Goals Prevented</option>
+                                        <option value="clean_sheets" {% if form_data.x_axis == "clean_sheets" %}selected{% endif %}>Clean Sheets</option>
+                                        <option value="error_led_to_goal" {% if form_data.x_axis == "error_led_to_goal" %}selected{% endif %}>Error Led to Goal</option>
+                                        <option value="high_claim" {% if form_data.x_axis == "high_claim" %}selected{% endif %}>High Claim</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🚀 GK Distribution">
+                                        <option value="gk_pass_accuracy" {% if form_data.x_axis == "gk_pass_accuracy" %}selected{% endif %}>GK Pass Accuracy (%)</option>
+                                        <option value="gk_accurate_long_balls" {% if form_data.x_axis == "gk_accurate_long_balls" %}selected{% endif %}>GK Accurate Long Balls</option>
+                                        <option value="gk_long_ball_accuracy" {% if form_data.x_axis == "gk_long_ball_accuracy" %}selected{% endif %}>GK Long Ball Accuracy (%)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="filter-label">
+                                    <i class="fas fa-arrows-alt-v text-success"></i>
+                                    Y-Axis Statistic
+                                </label>
+                                <!-- <select name="y_axis" id="y_axis" class="form-control">
+                                    {% for field_name, field_label in data_field_choices %}
+                                        <option value="{{ field_name }}" {% if form_data.y_axis == field_name %}selected{% endif %}>
+                                            {{ field_label }}
+                                        </option>
+                                    {% endfor %}
+                                </select> -->
+                                <select class="form-select custom-select" id="x_axis" name="x_axis" required>
+                                    <option value="" disabled {% if not form_data.x_axis %}selected{% endif %}>Choose a statistic...</option>
+                                    
+                                    <optgroup label="🥅 Shooting">
+                                        <option value="goals" {% if form_data.x_axis == "goals" %}selected{% endif %}>Goals</option>
+                                        <option value="expected_goals" {% if form_data.x_axis == "expected_goals" %}selected{% endif %}>Expected Goals (xG)</option>
+                                        <option value="xg_on_target" {% if form_data.x_axis == "xg_on_target" %}selected{% endif %}>xG on Target</option>
+                                        <option value="penalty_goals" {% if form_data.x_axis == "penalty_goals" %}selected{% endif %}>Penalty Goals</option>
+                                        <option value="non_penalty_xg" {% if form_data.x_axis == "non_penalty_xg" %}selected{% endif %}>Non-Penalty xG</option>
+                                        <option value="shots" {% if form_data.x_axis == "shots" %}selected{% endif %}>Shots</option>
+                                        <option value="shots_on_target" {% if form_data.x_axis == "shots_on_target" %}selected{% endif %}>Shots on Target</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🎯 Passing">
+                                        <option value="assists" {% if form_data.x_axis == "assists" %}selected{% endif %}>Assists</option>
+                                        <option value="expected_assists" {% if form_data.x_axis == "expected_assists" %}selected{% endif %}>Expected Assists (xA)</option>
+                                        <option value="successful_passes" {% if form_data.x_axis == "successful_passes" %}selected{% endif %}>Successful Passes</option>
+                                        <option value="pass_accuracy" {% if form_data.x_axis == "pass_accuracy" %}selected{% endif %}>Pass Accuracy (%)</option>
+                                        <option value="accurate_long_balls" {% if form_data.x_axis == "accurate_long_balls" %}selected{% endif %}>Accurate Long Balls</option>
+                                        <option value="long_ball_accuracy" {% if form_data.x_axis == "long_ball_accuracy" %}selected{% endif %}>Long Ball Accuracy (%)</option>
+                                        <option value="chances_created" {% if form_data.x_axis == "chances_created" %}selected{% endif %}>Chances Created</option>
+                                        <option value="successful_crosses" {% if form_data.x_axis == "successful_crosses" %}selected{% endif %}>Successful Crosses</option>
+                                        <option value="cross_accuracy" {% if form_data.x_axis == "cross_accuracy" %}selected{% endif %}>Cross Accuracy (%)</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="⚡ Possession">
+                                        <option value="successful_dribbles" {% if form_data.x_axis == "successful_dribbles" %}selected{% endif %}>Successful Dribbles</option>
+                                        <option value="dribble_success" {% if form_data.x_axis == "dribble_success" %}selected{% endif %}>Dribble Success (%)</option>
+                                        <option value="touches" {% if form_data.x_axis == "touches" %}selected{% endif %}>Touches</option>
+                                        <option value="touches_in_opposition_box" {% if form_data.x_axis == "touches_in_opposition_box" %}selected{% endif %}>Touches in Opposition Box</option>
+                                        <option value="dispossessed" {% if form_data.x_axis == "dispossessed" %}selected{% endif %}>Dispossessed</option>
+                                        <option value="fouls_won" {% if form_data.x_axis == "fouls_won" %}selected{% endif %}>Fouls Won</option>
+                                        <option value="penalties_awarded" {% if form_data.x_axis == "penalties_awarded" %}selected{% endif %}>Penalties Awarded</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🛡️ Defending">
+                                        <option value="tackles_won" {% if form_data.x_axis == "tackles_won" %}selected{% endif %}>Tackles Won</option>
+                                        <option value="tackles_won_percentage" {% if form_data.x_axis == "tackles_won_percentage" %}selected{% endif %}>Tackles Won (%)</option>
+                                        <option value="duels_won" {% if form_data.x_axis == "duels_won" %}selected{% endif %}>Duels Won</option>
+                                        <option value="duels_won_percentage" {% if form_data.x_axis == "duels_won_percentage" %}selected{% endif %}>Duels Won (%)</option>
+                                        <option value="aerial_duels_won" {% if form_data.x_axis == "aerial_duels_won" %}selected{% endif %}>Aerial Duels Won</option>
+                                        <option value="aerial_duels_won_percentage" {% if form_data.x_axis == "aerial_duels_won_percentage" %}selected{% endif %}>Aerial Duels Won (%)</option>
+                                        <option value="interceptions" {% if form_data.x_axis == "interceptions" %}selected{% endif %}>Interceptions</option>
+                                        <option value="blocked" {% if form_data.x_axis == "blocked" %}selected{% endif %}>Blocked</option>
+                                        <option value="fouls_committed" {% if form_data.x_axis == "fouls_committed" %}selected{% endif %}>Fouls Committed</option>
+                                        <option value="recoveries" {% if form_data.x_axis == "recoveries" %}selected{% endif %}>Recoveries</option>
+                                        <option value="possession_won_final_3rd" {% if form_data.x_axis == "possession_won_final_3rd" %}selected{% endif %}>Possession Won Final 3rd</option>
+                                        <option value="dribbled_past" {% if form_data.x_axis == "dribbled_past" %}selected{% endif %}>Dribbled Past</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="📋 Discipline">
+                                        <option value="yellow_cards" {% if form_data.x_axis == "yellow_cards" %}selected{% endif %}>Yellow Cards</option>
+                                        <option value="red_cards" {% if form_data.x_axis == "red_cards" %}selected{% endif %}>Red Cards</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🥅 Goalkeeping">
+                                        <option value="saves" {% if form_data.x_axis == "saves" %}selected{% endif %}>Saves</option>
+                                        <option value="save_percentage" {% if form_data.x_axis == "save_percentage" %}selected{% endif %}>Save Percentage (%)</option>
+                                        <option value="goals_conceded" {% if form_data.x_axis == "goals_conceded" %}selected{% endif %}>Goals Conceded</option>
+                                        <option value="goals_prevented" {% if form_data.x_axis == "goals_prevented" %}selected{% endif %}>Goals Prevented</option>
+                                        <option value="clean_sheets" {% if form_data.x_axis == "clean_sheets" %}selected{% endif %}>Clean Sheets</option>
+                                        <option value="error_led_to_goal" {% if form_data.x_axis == "error_led_to_goal" %}selected{% endif %}>Error Led to Goal</option>
+                                        <option value="high_claim" {% if form_data.x_axis == "high_claim" %}selected{% endif %}>High Claim</option>
+                                    </optgroup>
+                                    
+                                    <optgroup label="🚀 GK Distribution">
+                                        <option value="gk_pass_accuracy" {% if form_data.x_axis == "gk_pass_accuracy" %}selected{% endif %}>GK Pass Accuracy (%)</option>
+                                        <option value="gk_accurate_long_balls" {% if form_data.x_axis == "gk_accurate_long_balls" %}selected{% endif %}>GK Accurate Long Balls</option>
+                                        <option value="gk_long_ball_accuracy" {% if form_data.x_axis == "gk_long_ball_accuracy" %}selected{% endif %}>GK Long Ball Accuracy (%)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center my-4">
+                        <button type="submit" class="btn generate-btn">
+                            <i class="fas fa-rocket me-2"></i>
+                            Generate Analytics
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% if chart_data %}
+            <div class="chart-section">
+                {{ chart_data.graphic|safe }}
+            </div>
+            {% elif not error %}
+            <div class="no-chart-message">
+                <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                <h4>Ready to Analyze Player Performance</h4>
+                <p class="mb-0">Configure your filters above and click "Generate Analytics" to create insightful visualizations</p>
+            </div>
+            {% endif %}
+
+            {% if player_count %}
+            <div class="stats-info">
+                <i class="fas fa-users me-2"></i>
+                <strong>{{ player_count }}</strong> player{{ player_count|pluralize }} found matching your criteria
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Range functionality
+        function updateRange(type, value, minMax) {
+            const minInput = document.getElementById(`min_${type}`);
+            const maxInput = document.getElementById(`max_${type}`);
+            const minSlider = document.getElementById(`${type}_range_min`);
+            const maxSlider = document.getElementById(`${type}_range_max`);
+
+            if (minMax === 'min') {
+                minInput.value = value;
+                minSlider.value = value;
+                if (parseInt(value) > parseInt(maxInput.value)) {
+                    maxInput.value = value;
+                    maxSlider.value = value;
+                }
+            } else {
+                maxInput.value = value;
+                maxSlider.value = value;
+                if (parseInt(value) < parseInt(minInput.value)) {
+                    minInput.value = value;
+                    minSlider.value = value;
+                }
+            }
+        }
+
+        // Initialize range inputs and sliders sync
+        ['age', 'height', 'market_value'].forEach(type => {
+            const minInput = document.getElementById(`min_${type}`);
+            const maxInput = document.getElementById(`max_${type}`);
+            const minSlider = document.getElementById(`${type}_range_min`);
+            const maxSlider = document.getElementById(`${type}_range_max`);
+
+            if (minInput && maxInput && minSlider && maxSlider) {
+                minInput.addEventListener('input', function() {
+                    minSlider.value = this.value;
+                    if (parseInt(this.value) > parseInt(maxInput.value)) {
+                        maxInput.value = this.value;
+                        maxSlider.value = this.value;
+                    }
+                });
+
+                maxInput.addEventListener('input', function() {
+                    maxSlider.value = this.value;
+                    if (parseInt(this.value) < parseInt(minInput.value)) {
+                        minInput.value = this.value;
+                        minSlider.value = this.value;
+                    }
+                });
+            }
+        });
+
+        // Modern Multi-Select functionality
+        class ModernMultiSelect {
+            constructor(element) {
+                this.element = element;
+                this.trigger = element.querySelector('.multiselect-trigger');
+                this.dropdown = element.querySelector('.multiselect-dropdown');
+                this.searchInput = element.querySelector('.search-input');
+                this.options = element.querySelectorAll('.multiselect-option');
+                this.selectedText = element.querySelector('.selected-text');
+                this.placeholder = element.dataset.placeholder;
+                
+                this.init();
+            }
+
+            init() {
+                this.trigger.addEventListener('click', () => this.toggleDropdown());
+                this.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+                
+                this.options.forEach(option => {
+                    const checkbox = option.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', () => this.handleOptionChange());
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.element.contains(e.target)) {
+                        this.closeDropdown();
+                    }
+                });
+
+                // Initialize selected text
+                this.updateSelectedText();
+            }
+
+            toggleDropdown() {
+                const isShown = this.dropdown.classList.contains('show');
+                
+                // Close all other dropdowns and reset z-index
+                document.querySelectorAll('.multiselect-dropdown.show').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+                document.querySelectorAll('.multiselect-trigger.active').forEach(trigger => {
+                    trigger.classList.remove('active');
+                });
+                document.querySelectorAll('.modern-multiselect.active').forEach(select => {
+                    select.classList.remove('active');
+                });
+
+                if (!isShown) {
+                    this.dropdown.classList.add('show');
+                    this.trigger.classList.add('active');
+                    this.element.classList.add('active'); // Add active class for z-index
+                    this.searchInput.focus();
+                } else {
+                    this.closeDropdown();
+                }
+            }
+
+            closeDropdown() {
+                this.dropdown.classList.remove('show');
+                this.trigger.classList.remove('active');
+                this.element.classList.remove('active'); // Remove active class
+                this.searchInput.value = '';
+                this.showAllOptions();
+            }
+
+            handleSearch(query) {
+                const searchTerm = query.toLowerCase();
+                
+                this.options.forEach(option => {
+                    const text = option.dataset.text.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        option.style.display = 'flex';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+            }
+
+            showAllOptions() {
+                this.options.forEach(option => {
+                    option.style.display = 'flex';
+                });
+            }
+
+            handleOptionChange() {
+                this.updateSelectedText();
+                this.updateOptionStyles();
+            }
+
+            updateSelectedText() {
+                const checkedBoxes = this.element.querySelectorAll('input[type="checkbox"]:checked');
+                
+                if (checkedBoxes.length === 0) {
+                    this.selectedText.textContent = this.placeholder;
+                    this.selectedText.classList.add('text-muted');
+                } else if (checkedBoxes.length === 1) {
+                    this.selectedText.textContent = checkedBoxes[0].closest('.multiselect-option').dataset.text;
+                    this.selectedText.classList.remove('text-muted');
+                } else {
+                    this.selectedText.textContent = `${checkedBoxes.length} selected`;
+                    this.selectedText.classList.remove('text-muted');
+                }
+            }
+
+            updateOptionStyles() {
+                this.options.forEach(option => {
+                    const checkbox = option.querySelector('input[type="checkbox"]');
+                    if (checkbox.checked) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
+        }
+
+        // Initialize all multi-selects
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.modern-multiselect').forEach(element => {
+                new ModernMultiSelect(element);
+            });
+        });
+    </script>
+</body>
+</html>
