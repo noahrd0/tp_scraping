@@ -746,83 +746,12 @@
                                     <i class="fas fa-arrows-alt-h text-primary"></i>
                                     X-Axis Statistic
                                 </label>
-                                <!-- <select name="x_axis" id="x_axis" class="form-control">
+                                <select name="x_axis" id="x_axis" class="form-control">
                                     {% for field_name, field_label in data_field_choices %}
                                         <option value="{{ field_name }}" {% if form_data.x_axis == field_name %}selected{% endif %}>
                                             {{ field_label }}
                                         </option>
                                     {% endfor %}
-                                </select> -->
-                                <select class="form-select custom-select" id="x_axis" name="x_axis" required>
-                                    <option value="" disabled {% if not form_data.x_axis %}selected{% endif %}>Choose a statistic...</option>
-                                    
-                                    <optgroup label="🥅 Shooting">
-                                        <option value="goals" {% if form_data.x_axis == "goals" %}selected{% endif %}>Goals</option>
-                                        <option value="expected_goals" {% if form_data.x_axis == "expected_goals" %}selected{% endif %}>Expected Goals (xG)</option>
-                                        <option value="xg_on_target" {% if form_data.x_axis == "xg_on_target" %}selected{% endif %}>xG on Target</option>
-                                        <option value="penalty_goals" {% if form_data.x_axis == "penalty_goals" %}selected{% endif %}>Penalty Goals</option>
-                                        <option value="non_penalty_xg" {% if form_data.x_axis == "non_penalty_xg" %}selected{% endif %}>Non-Penalty xG</option>
-                                        <option value="shots" {% if form_data.x_axis == "shots" %}selected{% endif %}>Shots</option>
-                                        <option value="shots_on_target" {% if form_data.x_axis == "shots_on_target" %}selected{% endif %}>Shots on Target</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🎯 Passing">
-                                        <option value="assists" {% if form_data.x_axis == "assists" %}selected{% endif %}>Assists</option>
-                                        <option value="expected_assists" {% if form_data.x_axis == "expected_assists" %}selected{% endif %}>Expected Assists (xA)</option>
-                                        <option value="successful_passes" {% if form_data.x_axis == "successful_passes" %}selected{% endif %}>Successful Passes</option>
-                                        <option value="pass_accuracy" {% if form_data.x_axis == "pass_accuracy" %}selected{% endif %}>Pass Accuracy (%)</option>
-                                        <option value="accurate_long_balls" {% if form_data.x_axis == "accurate_long_balls" %}selected{% endif %}>Accurate Long Balls</option>
-                                        <option value="long_ball_accuracy" {% if form_data.x_axis == "long_ball_accuracy" %}selected{% endif %}>Long Ball Accuracy (%)</option>
-                                        <option value="chances_created" {% if form_data.x_axis == "chances_created" %}selected{% endif %}>Chances Created</option>
-                                        <option value="successful_crosses" {% if form_data.x_axis == "successful_crosses" %}selected{% endif %}>Successful Crosses</option>
-                                        <option value="cross_accuracy" {% if form_data.x_axis == "cross_accuracy" %}selected{% endif %}>Cross Accuracy (%)</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="⚡ Possession">
-                                        <option value="successful_dribbles" {% if form_data.x_axis == "successful_dribbles" %}selected{% endif %}>Successful Dribbles</option>
-                                        <option value="dribble_success" {% if form_data.x_axis == "dribble_success" %}selected{% endif %}>Dribble Success (%)</option>
-                                        <option value="touches" {% if form_data.x_axis == "touches" %}selected{% endif %}>Touches</option>
-                                        <option value="touches_in_opposition_box" {% if form_data.x_axis == "touches_in_opposition_box" %}selected{% endif %}>Touches in Opposition Box</option>
-                                        <option value="dispossessed" {% if form_data.x_axis == "dispossessed" %}selected{% endif %}>Dispossessed</option>
-                                        <option value="fouls_won" {% if form_data.x_axis == "fouls_won" %}selected{% endif %}>Fouls Won</option>
-                                        <option value="penalties_awarded" {% if form_data.x_axis == "penalties_awarded" %}selected{% endif %}>Penalties Awarded</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🛡️ Defending">
-                                        <option value="tackles_won" {% if form_data.x_axis == "tackles_won" %}selected{% endif %}>Tackles Won</option>
-                                        <option value="tackles_won_percentage" {% if form_data.x_axis == "tackles_won_percentage" %}selected{% endif %}>Tackles Won (%)</option>
-                                        <option value="duels_won" {% if form_data.x_axis == "duels_won" %}selected{% endif %}>Duels Won</option>
-                                        <option value="duels_won_percentage" {% if form_data.x_axis == "duels_won_percentage" %}selected{% endif %}>Duels Won (%)</option>
-                                        <option value="aerial_duels_won" {% if form_data.x_axis == "aerial_duels_won" %}selected{% endif %}>Aerial Duels Won</option>
-                                        <option value="aerial_duels_won_percentage" {% if form_data.x_axis == "aerial_duels_won_percentage" %}selected{% endif %}>Aerial Duels Won (%)</option>
-                                        <option value="interceptions" {% if form_data.x_axis == "interceptions" %}selected{% endif %}>Interceptions</option>
-                                        <option value="blocked" {% if form_data.x_axis == "blocked" %}selected{% endif %}>Blocked</option>
-                                        <option value="fouls_committed" {% if form_data.x_axis == "fouls_committed" %}selected{% endif %}>Fouls Committed</option>
-                                        <option value="recoveries" {% if form_data.x_axis == "recoveries" %}selected{% endif %}>Recoveries</option>
-                                        <option value="possession_won_final_3rd" {% if form_data.x_axis == "possession_won_final_3rd" %}selected{% endif %}>Possession Won Final 3rd</option>
-                                        <option value="dribbled_past" {% if form_data.x_axis == "dribbled_past" %}selected{% endif %}>Dribbled Past</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="📋 Discipline">
-                                        <option value="yellow_cards" {% if form_data.x_axis == "yellow_cards" %}selected{% endif %}>Yellow Cards</option>
-                                        <option value="red_cards" {% if form_data.x_axis == "red_cards" %}selected{% endif %}>Red Cards</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🥅 Goalkeeping">
-                                        <option value="saves" {% if form_data.x_axis == "saves" %}selected{% endif %}>Saves</option>
-                                        <option value="save_percentage" {% if form_data.x_axis == "save_percentage" %}selected{% endif %}>Save Percentage (%)</option>
-                                        <option value="goals_conceded" {% if form_data.x_axis == "goals_conceded" %}selected{% endif %}>Goals Conceded</option>
-                                        <option value="goals_prevented" {% if form_data.x_axis == "goals_prevented" %}selected{% endif %}>Goals Prevented</option>
-                                        <option value="clean_sheets" {% if form_data.x_axis == "clean_sheets" %}selected{% endif %}>Clean Sheets</option>
-                                        <option value="error_led_to_goal" {% if form_data.x_axis == "error_led_to_goal" %}selected{% endif %}>Error Led to Goal</option>
-                                        <option value="high_claim" {% if form_data.x_axis == "high_claim" %}selected{% endif %}>High Claim</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🚀 GK Distribution">
-                                        <option value="gk_pass_accuracy" {% if form_data.x_axis == "gk_pass_accuracy" %}selected{% endif %}>GK Pass Accuracy (%)</option>
-                                        <option value="gk_accurate_long_balls" {% if form_data.x_axis == "gk_accurate_long_balls" %}selected{% endif %}>GK Accurate Long Balls</option>
-                                        <option value="gk_long_ball_accuracy" {% if form_data.x_axis == "gk_long_ball_accuracy" %}selected{% endif %}>GK Long Ball Accuracy (%)</option>
-                                    </optgroup>
                                 </select>
                             </div>
 
@@ -831,83 +760,12 @@
                                     <i class="fas fa-arrows-alt-v text-success"></i>
                                     Y-Axis Statistic
                                 </label>
-                                <!-- <select name="y_axis" id="y_axis" class="form-control">
+                                <select name="y_axis" id="y_axis" class="form-control">
                                     {% for field_name, field_label in data_field_choices %}
                                         <option value="{{ field_name }}" {% if form_data.y_axis == field_name %}selected{% endif %}>
                                             {{ field_label }}
                                         </option>
                                     {% endfor %}
-                                </select> -->
-                                <select class="form-select custom-select" id="x_axis" name="x_axis" required>
-                                    <option value="" disabled {% if not form_data.x_axis %}selected{% endif %}>Choose a statistic...</option>
-                                    
-                                    <optgroup label="🥅 Shooting">
-                                        <option value="goals" {% if form_data.x_axis == "goals" %}selected{% endif %}>Goals</option>
-                                        <option value="expected_goals" {% if form_data.x_axis == "expected_goals" %}selected{% endif %}>Expected Goals (xG)</option>
-                                        <option value="xg_on_target" {% if form_data.x_axis == "xg_on_target" %}selected{% endif %}>xG on Target</option>
-                                        <option value="penalty_goals" {% if form_data.x_axis == "penalty_goals" %}selected{% endif %}>Penalty Goals</option>
-                                        <option value="non_penalty_xg" {% if form_data.x_axis == "non_penalty_xg" %}selected{% endif %}>Non-Penalty xG</option>
-                                        <option value="shots" {% if form_data.x_axis == "shots" %}selected{% endif %}>Shots</option>
-                                        <option value="shots_on_target" {% if form_data.x_axis == "shots_on_target" %}selected{% endif %}>Shots on Target</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🎯 Passing">
-                                        <option value="assists" {% if form_data.x_axis == "assists" %}selected{% endif %}>Assists</option>
-                                        <option value="expected_assists" {% if form_data.x_axis == "expected_assists" %}selected{% endif %}>Expected Assists (xA)</option>
-                                        <option value="successful_passes" {% if form_data.x_axis == "successful_passes" %}selected{% endif %}>Successful Passes</option>
-                                        <option value="pass_accuracy" {% if form_data.x_axis == "pass_accuracy" %}selected{% endif %}>Pass Accuracy (%)</option>
-                                        <option value="accurate_long_balls" {% if form_data.x_axis == "accurate_long_balls" %}selected{% endif %}>Accurate Long Balls</option>
-                                        <option value="long_ball_accuracy" {% if form_data.x_axis == "long_ball_accuracy" %}selected{% endif %}>Long Ball Accuracy (%)</option>
-                                        <option value="chances_created" {% if form_data.x_axis == "chances_created" %}selected{% endif %}>Chances Created</option>
-                                        <option value="successful_crosses" {% if form_data.x_axis == "successful_crosses" %}selected{% endif %}>Successful Crosses</option>
-                                        <option value="cross_accuracy" {% if form_data.x_axis == "cross_accuracy" %}selected{% endif %}>Cross Accuracy (%)</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="⚡ Possession">
-                                        <option value="successful_dribbles" {% if form_data.x_axis == "successful_dribbles" %}selected{% endif %}>Successful Dribbles</option>
-                                        <option value="dribble_success" {% if form_data.x_axis == "dribble_success" %}selected{% endif %}>Dribble Success (%)</option>
-                                        <option value="touches" {% if form_data.x_axis == "touches" %}selected{% endif %}>Touches</option>
-                                        <option value="touches_in_opposition_box" {% if form_data.x_axis == "touches_in_opposition_box" %}selected{% endif %}>Touches in Opposition Box</option>
-                                        <option value="dispossessed" {% if form_data.x_axis == "dispossessed" %}selected{% endif %}>Dispossessed</option>
-                                        <option value="fouls_won" {% if form_data.x_axis == "fouls_won" %}selected{% endif %}>Fouls Won</option>
-                                        <option value="penalties_awarded" {% if form_data.x_axis == "penalties_awarded" %}selected{% endif %}>Penalties Awarded</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🛡️ Defending">
-                                        <option value="tackles_won" {% if form_data.x_axis == "tackles_won" %}selected{% endif %}>Tackles Won</option>
-                                        <option value="tackles_won_percentage" {% if form_data.x_axis == "tackles_won_percentage" %}selected{% endif %}>Tackles Won (%)</option>
-                                        <option value="duels_won" {% if form_data.x_axis == "duels_won" %}selected{% endif %}>Duels Won</option>
-                                        <option value="duels_won_percentage" {% if form_data.x_axis == "duels_won_percentage" %}selected{% endif %}>Duels Won (%)</option>
-                                        <option value="aerial_duels_won" {% if form_data.x_axis == "aerial_duels_won" %}selected{% endif %}>Aerial Duels Won</option>
-                                        <option value="aerial_duels_won_percentage" {% if form_data.x_axis == "aerial_duels_won_percentage" %}selected{% endif %}>Aerial Duels Won (%)</option>
-                                        <option value="interceptions" {% if form_data.x_axis == "interceptions" %}selected{% endif %}>Interceptions</option>
-                                        <option value="blocked" {% if form_data.x_axis == "blocked" %}selected{% endif %}>Blocked</option>
-                                        <option value="fouls_committed" {% if form_data.x_axis == "fouls_committed" %}selected{% endif %}>Fouls Committed</option>
-                                        <option value="recoveries" {% if form_data.x_axis == "recoveries" %}selected{% endif %}>Recoveries</option>
-                                        <option value="possession_won_final_3rd" {% if form_data.x_axis == "possession_won_final_3rd" %}selected{% endif %}>Possession Won Final 3rd</option>
-                                        <option value="dribbled_past" {% if form_data.x_axis == "dribbled_past" %}selected{% endif %}>Dribbled Past</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="📋 Discipline">
-                                        <option value="yellow_cards" {% if form_data.x_axis == "yellow_cards" %}selected{% endif %}>Yellow Cards</option>
-                                        <option value="red_cards" {% if form_data.x_axis == "red_cards" %}selected{% endif %}>Red Cards</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🥅 Goalkeeping">
-                                        <option value="saves" {% if form_data.x_axis == "saves" %}selected{% endif %}>Saves</option>
-                                        <option value="save_percentage" {% if form_data.x_axis == "save_percentage" %}selected{% endif %}>Save Percentage (%)</option>
-                                        <option value="goals_conceded" {% if form_data.x_axis == "goals_conceded" %}selected{% endif %}>Goals Conceded</option>
-                                        <option value="goals_prevented" {% if form_data.x_axis == "goals_prevented" %}selected{% endif %}>Goals Prevented</option>
-                                        <option value="clean_sheets" {% if form_data.x_axis == "clean_sheets" %}selected{% endif %}>Clean Sheets</option>
-                                        <option value="error_led_to_goal" {% if form_data.x_axis == "error_led_to_goal" %}selected{% endif %}>Error Led to Goal</option>
-                                        <option value="high_claim" {% if form_data.x_axis == "high_claim" %}selected{% endif %}>High Claim</option>
-                                    </optgroup>
-                                    
-                                    <optgroup label="🚀 GK Distribution">
-                                        <option value="gk_pass_accuracy" {% if form_data.x_axis == "gk_pass_accuracy" %}selected{% endif %}>GK Pass Accuracy (%)</option>
-                                        <option value="gk_accurate_long_balls" {% if form_data.x_axis == "gk_accurate_long_balls" %}selected{% endif %}>GK Accurate Long Balls</option>
-                                        <option value="gk_long_ball_accuracy" {% if form_data.x_axis == "gk_long_ball_accuracy" %}selected{% endif %}>GK Long Ball Accuracy (%)</option>
-                                    </optgroup>
                                 </select>
                             </div>
                         </div>
